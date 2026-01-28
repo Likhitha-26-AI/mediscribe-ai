@@ -1,6 +1,11 @@
 # mediscribe-ai
 # Aira — Offline Emergency Response Assistant  
-MedGemma Impact Challenge 2026 (Prototype – Day 1)
+MedGemma Impact Challenge 2026 
+Named it AIRA because:
+A - Artificial
+I - Intelligence
+R - Response
+A - Assitant
 
 ## Overview
 
