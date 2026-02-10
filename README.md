@@ -145,6 +145,8 @@ This is if the patiient is not so severly injured .
 which is the cause of the rise of the other feature i included which is a voice input.in most of the scenarios the user might no be physically present , i mean way too much shocked to even type the iput so inorder to solve this a voice input is added just one click the speaker will deliver the situation and explain the seriousness of the injury to ARIA and she will assist the user in their next steps in such emergency sitautions
 This is if the patiient is
 inorder to solve this a voice input is added just one click the speaker will deliver the situation and explain the seriousness of the injury to ARIA and she will assist the user in their next steps in such emergency sitautions
+This is if the patiient is
+in their next steps in such emergency sitautions
 This is if the patiient is 
 
 
