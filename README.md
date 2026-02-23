@@ -1,146 +1,105 @@
-# mediscribe-ai
-# Aira — Offline Emergency Response Assistant  
-MedGemma Impact Challenge 2026 
-Named it AIRA because:
-A - Artificial
-I - Intelligence
-R - Response
-A - Assitant
+# MedRoute — AI-Powered Clinical Triage & Care Navigation
 
-## Overview
+[![MedGemma](https://img.shields.io/badge/Powered%20by-MedGemma-blue)](https://huggingface.co/google/medgemma-4b-it)
+[![HuggingFace](https://img.shields.io/badge/Model-HuggingFace-yellow)](https://huggingface.co/spark-2026/medroute-medgemma-finetuned)
+[![Demo](https://img.shields.io/badge/Demo-HuggingFace%20Spaces-green)](https://huggingface.co/spaces/spark-2026/MedRoute)
 
-Aira is an **offline-first emergency triage assistant** designed for disaster zones and rural settings where internet connectivity is unreliable or completely absent.
-
-This repository contains the **first working prototype** of the system:
-
-- A **rule-based emergency engine** that behaves like a senior emergency doctor for a few critical scenarios
-- A **Gradio web UI** to interact with the assistant
-- A **Hugging Face Space deployment** for a permanent live demo
-
-The long-term goal is to plug this logic into an on-device **MedGemma / Gemma** model (HAI-DEF) so that the reasoning becomes fully model-driven while still running on edge devices.
+A 4-agent AI pipeline that guides patients from symptom description to a clinician-ready care plan in under 2 minutes using fine-tuned MedGemma — Google's Health AI Developer Foundations model.
 
 ---
 
-## What I Implemented Today
+## Problem
 
-### 1. Concept & Scope
+Over 136 million patients visit US emergency rooms annually — 40–50% for non-emergency conditions, costing $38 billion annually. Patients don't know where to seek care. MedRoute solves this.
 
-- Defined the core **use case**:  
-  An assistant that can guide first responders through **triage and immediate actions** for life‑threatening emergencies when:
-  - There is **no internet**
-  - There is **no senior doctor** available
-  - Time is measured in **seconds–minutes**
+---
 
-- Chosen target scenarios for the prototype:
-  - Sucking chest wound / open pneumothorax
-  - Acute epiglottitis in a child (airway emergency)
-  - Acute cardiogenic pulmonary edema
-  - Femoral fracture with hemorrhagic shock
-  - Severe anaphylaxis
+## Solution
 
-### 2. Rule-Based Emergency Engine (Prototype Brain)
+MedRoute uses a 4-agent pipeline powered by fine-tuned MedGemma-4B:
 
-Because of repeated GPU and generation issues with MedGemma/Gemma in Colab, I implemented a **deterministic rule-based engine** to simulate how the assistant should behave.
+| Agent | Role |
+|---|---|
+| Agent 1 — Clinical Intake | Extracts symptoms, asks follow-up question |
+| Agent 2 — Triage Classifier | Fine-tuned MedGemma classifies urgency (0-3) |
+| Agent 3 — Care Navigator | Personalized care plan |
+| Agent 4 — Clinical Handoff | SOAP-format physician note |
 
-Today’s engine:
+---
 
-- Takes a **free-text patient description** as input  
-  (e.g. *“19yo male, stab wound to left chest, sucking sound, pale, agitated, BP 85/50, HR 138”*)
-- Does simple **keyword / pattern matching** on the text
-- Returns a **structured, medically realistic plan** for that scenario:
-  - Triage level
-  - Likely diagnosis
-  - Step‑by‑step immediate actions
-  - Short advice to the responder
+## Model
 
-Example (open pneumothorax):
+- **Base Model:** google/medgemma-4b-it
+- **Fine-tuning:** LoRA (r=8, alpha=16)
+- **Dataset:** 18,000 synthetic patient triage records
+- **Training Loss:** 1.6509 → 0.2792 (83% reduction)
+- **Accuracy:** 90% (9/10 test cases)
+- **Fine-tuned Model:** [spark-2026/medroute-medgemma-finetuned](https://huggingface.co/spark-2026/medroute-medgemma-finetuned)
 
-```text
-TRIAGE → IMMEDIATE
+---
 
-OPEN PNEUMOTHORAX → SUCKING CHEST WOUND
+## Demo
 
-1. Seal wound NOW with occlusive dressing (3 sides taped or chest seal)
-2. High-flow oxygen 15L/min
-3. Monitor for tension pneumothorax → needle decompress if needed
-4. Urgent trauma center — do not delay
-This gives me a ground truth template for how the AI should eventually respond once MedGemma/Gemma is wired in.
-3. Gradio UI
-I created a simple Gradio interface around the emergency logic:
+- **Live Demo:** [HuggingFace Spaces](https://huggingface.co/spaces/spark-2026/MedRoute)
+- **Video:** [YouTube](https://youtu.be/-ziJYH_IQvU)
 
-Input: multi-line textbox – “Patient Presentation”
-Output: multi-line textbox – “Aira / MERS Response”
-Includes example cases for quick testing:
-Stab wound to left chest with sucking sound
-Child with drooling, stridor, can’t swallow
-Heart failure with pink frothy sputum
-Femur fracture with shock
-Severe anaphylaxis after peanuts
-This UI is what I will use in:
+---
 
-The demo video
-The judges’ live interaction via Hugging Face Space
-4. Hugging Face Space Deployment
-I deployed the prototype UI + logic as a permanent Space:
+## Setup
+```bash
+pip install transformers accelerate peft trl gradio
+```
+```python
+from huggingface_hub import login
+login("your_hf_token")
+```
 
-Live demo (permanent):
-https://huggingface.co/spaces/spark-2026/mers-medgemma
+---
 
-Uses the app.py file with the Gradio interface.
-Does not rely on any external API keys or GPUs → will continue to work through the entire competition period (up to March 2026 and after).
-This Space link is what will be included in the Kaggle writeup and demo video.
-Current Architecture (Prototype)
-text
+## Run
 
-User (First Responder)
-        ↓
-Gradio UI (Hugging Face Space)
-        ↓
-Aira Emergency Engine (rule-based)
-        ↓
-Structured Response:
-- TRIAGE level
-- LIKELY DIAGNOSIS
-- IMMEDIATE ACTIONS
-- ADVICE
-Today’s version uses a handcrafted rule engine for a small but critical set of emergencies.
-The next step is to replace the rule-based engine with a MedGemma / Gemma model running locally (4‑bit quantized) and fine-tuned on these patterns.
+Open `medroute_demo.ipynb` in Kaggle or Colab with GPU enabled and run all cells.
 
-Technology Stack
-Python 3
-Gradio (UI + deployment to Hugging Face Spaces)
-Hugging Face Spaces (spark-2026/mers-medgemma) for permanent hosting
-Planned (not fully wired in yet, but explored in Col
+---
 
-google/medgemma-1.5-4b-it
-google/gemma-2b-it
-4-bit quantization for edge deployment
-Integration via transformers + accelerate
+## Results
 
-got a ui login page in which the user will give the description of the patient and ARIA will give a detailed descrition if what to do in various emergency situations.
-This is if the patiient is not so severly injured .
-which is the cause of the rise of the other feature i included which is a voice input.in most of the scenarios the user might no be physically present , i mean way too much shocked to even type the iput so inorder to solve this a voice input is added just one click the speaker will deliver the situation and explain the seriousness of the injury to ARIA and she will assist the user in their next steps in such emergency sitautions...
-got a ui login page in which the user will give the description of the patient and ARIA will give a detailed descrition if what to do in various emergency situations.
-This is if the patiient is not so severly injured .
-which is the cause of the rise of the other feature i included which is a voice input.in most of the scenarios the user might no be physically present , i mean way too much shocked to even type the iput so inorder to solve this a voice inp6gucycut is added just one click the speaker will deliver the situation and explain the seriousness of the injury to ARIA and she will assist the user in their next steps in such emergency sitautions...
-got a ui login page in which the user will give the description of the patient and ARIA will give a detailed descrition if what to do in various emergency situations.
-This is if the patiient is not so severly injured .
-which is the cause of the rise of the other feature i included which is a voice input.in most of the scenarios the user might no be physically present , i mean way too much shocked to even type the iput so inorder to solve this a voice input is added just one click the speaker will deliver the situation and explain the seriousness of the injury to ARIA and she will assist the user in their next steps in such emergency sitautions...
-got a ui login page in which the user will give the description of the patient and ARIA will give a detailed descrition if what to do in various emergency situations.
-This is if the patiient is not so severly injured .
-which is the cause of the rise of the other feature i included which is a voice input.in most of the scenarios the user might no be physically present , i mean way too much shocked to even type the iput so inorder to solve this a voice input is added just one click the speaker will deliver the situation and explain the seriousness of the injury to ARIA and she will assist the user in their next steps in such emergency sitautions...
-got a ui login page in which the user will give the description of the patient and ARIA will give a detailed descrition if what to do in various emergency situations.
-This is if the patiient is not so severly
-which is the cause of the rise of the other feature i included which is a voice input.in most of the scenarios the user might no be physically present , i mean way too much shocked to even type the iput so inorder to solve this a voice input is added just one click the speaker will deliver the situation and expleriousness of the injury to ARIA and she will assist the user in their next steps in such emergency sitautions
-got a ui login page in which the user will give the description of the patient and ARIA will give a detailed descrition if what to do in various emergency situations.
-This is if the patiient is not so severly injured .
-which is the cause of the rise of the other feature i included which is a voice input.in most of the scenarios the user might no be physically present , i mean way too much shocked to even type the iput so inorder to solve this a voice input is added just one click the speaker will deliver the situation and explain the seriousness of the injury to ARIA and she will assist the user in their next steps in such 
-which is the cause of the rise of the other feature i included which is a voice input.in most of the scenarios the user might no be physically present , i mean way too much shocked to even type the iput so inorder to solve this a voice input is added just one click the speaker will deliver tituation and explain the seriousness of the injury to ARIA and she will assist the user in their next steps in such emergency sitautions
-other feature i included which is a voice input.in most of the scenarios the user might no be physically got a ui login page in which the user will give the description of the patient and ARIA will give a detailed descrition if what to do in various emergency situations.
-This is if the patiient is not so severly injured .
-which is the cause of the rise of the other feature i included which is a voice input.in most of the scenarios the user might no be physically present , i mean way too much shocked to even type the iput so inorder to solve this a voice input is added just one click the speaker will deliver the situation and explain the seriousness of the injury to ARIA and she will assist the user in their next steps in such emergency sitautions
-This is if the patiient is
-inorder to solve this a voice input is added just one click the speaker willexplain the seriousness of the injury to ARIA and she will assist the user in their next steps in such emerg
- 
+| Case | Expected | Predicted | Result |
+|---|---|---|---|
+| Chest pain, HR 147, ambulance | 3 Emergency | 3 | ✅ |
+| Mild pain, walk-in | 0 Non-Urgent | 0 | ✅ |
+| O2 92%, pain 4/10 | 1 Less Urgent | 1 | ✅ |
+| HR 58, pain 2/10 | 0 Non-Urgent | 0 | ✅ |
+| Pain 5/10, 2 chronic | 1 Less Urgent | 1 | ✅ |
+| HR 130, O2 88%, ambulance | 3 Emergency | 3 | ✅ |
+| BP 180, pain 7/10 | 2 Urgent | 2 | ✅ |
+| Temp 39.5°C, pain 6/10 | 2 Urgent | 2 | ✅ |
+| Age 72, 4 chronic, ambulance | 3 Emergency | 2 | ❌ |
+| Mild pain, walk-in | 0 Non-Urgent | 0 | ✅ |
 
+**Accuracy: 9/10 (90%)**
+
+---
+
+## Deployment
+
+Because MedGemma is open-weight, MedRoute can be deployed entirely on-premise — zero patient data leaving the facility, fully HIPAA compliant.
+
+**Roadmap:**
+- Phase 1: Hospital kiosks (quantized on-device)
+- Phase 2: EHR integration via HL7 FHIR API
+- Phase 3: Offline rural mobile app
+
+---
+
+## Author
+
+G. Likhitha Rao — AI/ML Student
+Built for the MedGemma Impact Challenge 2026
+
+---
+
+## License
+
+MIT License
 
