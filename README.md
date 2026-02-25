@@ -102,5 +102,5 @@ Built for the MedGemma Impact Challenge 2026
 ## License
 
 MIT License
-....
+......
 
